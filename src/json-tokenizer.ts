@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import { assertDone, assertExpected, isLowerAlpha, isNumeric, isWhitespace, readChars, throwUnexpected } from "./helpers";
 
 // see https://www.json.org/json-en.html
 
@@ -49,7 +49,7 @@ export async function* jsonTokenizer(
     }
 
     async function* emitValue(): AsyncIterable<Token> {
-        assertEnd(current);
+        assertDone(current);
 
         switch (current.value) {
             case "{":
@@ -79,22 +79,21 @@ export async function* jsonTokenizer(
                     yield* emitKeyword();
                     break;
                 }
-                // TODO: syntaxerror
-                assert.fail();
+
+                throwUnexpected(current.value);
         }
     }
 
     async function* emitObject(): AsyncIterable<Token> {
-        assertEnd(current);
-        // TODO: syntaxerror
-        assert(current.value === "{");
+        assertDone(current);
+        assertExpected(current.value, "{");
 
         yield {
             type: TokenType.ObjectOpen,
             value: current.value,
         };
         current = await char.next();
-        assertEnd(current);
+        assertDone(current);
 
         let expectComma = false;
         yield* emitWhitespace();
@@ -122,16 +121,15 @@ export async function* jsonTokenizer(
     }
 
     async function* emitArray(): AsyncIterable<Token> {
-        assertEnd(current);
-        // TODO: syntaxerror
-        assert(current.value === "[");
+        assertDone(current);
+        assertExpected(current.value, "[");
 
         yield {
             type: TokenType.ArrayOpen,
             value: current.value,
         };
         current = await char.next();
-        assertEnd(current);
+        assertDone(current);
 
         let expectComma = false;
         yield* emitWhitespace();
@@ -155,22 +153,21 @@ export async function* jsonTokenizer(
     }
 
     async function* emitString(): AsyncIterable<Token> {
-        assertEnd(current);
-        // TODO: syntaxerror
-        assert(current.value === "\"");
+        assertDone(current);
+        assertExpected(current.value, "\"");
 
         yield {
             type: TokenType.StringOpen,
             value: current.value,
         };
         current = await char.next();
-        assertEnd(current);
+        assertDone(current);
 
         let buffer = "";
         while (current.value !== "\"") {
             if (current.value === "\\") {
                 current = await char.next();
-                assertEnd(current);
+                assertDone(current);
 
                 switch (current.value) {
                     case "\"":
@@ -190,7 +187,7 @@ export async function* jsonTokenizer(
                 buffer = "";
             }
             current = await char.next();
-            assertEnd(current);
+            assertDone(current);
         }
 
         if (buffer.length > 0) {
@@ -210,9 +207,10 @@ export async function* jsonTokenizer(
 
     // TODO: support fractions, exponents
     async function* emitNumber(): AsyncIterable<Token> {
-        assertEnd(current);
-        // TODO: syntaxerror
-        assert(current.value === "-" || isNumeric(current.value));
+        assertDone(current);
+        if (!(current.value === "-" || isNumeric(current.value))) {
+            throwUnexpected(current.value);
+        }
 
         let buffer = current.value;
         current = await char.next();
@@ -229,9 +227,10 @@ export async function* jsonTokenizer(
     }
 
     async function* emitKeyword(): AsyncIterable<Token> {
-        assertEnd(current);
-        // TODO: syntaxerror
-        assert(isLowerAlpha(current.value));
+        assertDone(current);
+        if (!isLowerAlpha(current.value)) {
+            throwUnexpected(current.value);
+        }
 
         let buffer = current.value;
         current = await char.next();
@@ -262,8 +261,7 @@ export async function* jsonTokenizer(
                 };
                 break;
 
-            // TODO: syntaxerror
-            default: assert.fail();
+            default: throwUnexpected(buffer);
         }
     }
 
@@ -281,9 +279,8 @@ export async function* jsonTokenizer(
     }
 
     async function* emitComma(): AsyncIterable<Token> {
-        assertEnd(current);
-        // TODO: syntaxerror
-        assert(current.value === ",");
+        assertDone(current);
+        assertExpected(current.value, ",");
 
         yield {
             type: TokenType.Comma,
@@ -293,9 +290,8 @@ export async function* jsonTokenizer(
     }
 
     async function* emitColon(): AsyncIterable<Token> {
-        assertEnd(current);
-        // TODO: syntaxerror
-        assert(current.value === ":");
+        assertDone(current);
+        assertExpected(current.value, ":");
 
         yield {
             type: TokenType.Colon,
@@ -305,37 +301,3 @@ export async function* jsonTokenizer(
     }
 
 }
-
-//#region helpers
-
-async function* readChars(chunks: AsyncIterable<string> | Iterable<string>) {
-    for await (const chunk of chunks) {
-        yield* chunk;
-    }
-}
-
-function isLowerAlpha(char: string) {
-    return char >= "a" && char <= "z";
-}
-
-function isWhitespace(char: string) {
-    return (
-        char === "\u0020" || // space
-        char === "\u000A" || // line feed
-        char === "\u000D" || // carriage return
-        char === "\u0009" // horizontal tab
-    );
-}
-
-function isNumeric(char: string) {
-    return char >= "0" && char <= "9";
-}
-
-function assertEnd(
-    result: IteratorResult<string, void>,
-): asserts result is IteratorYieldResult<string> {
-    // TODO: make JsonTokenizerError
-    if (result.done) throw new SyntaxError("Unexpected end of JSON input");
-}
-
-//#endregion
