@@ -76,6 +76,22 @@ test("string", async t => {
 
 });
 
+test("keyword", async t => {
+    t.deepEqual(
+        await toTokenList(' false  true  null '),
+        [
+            { type: TokenType.Whitespace, value: " " },
+            { type: TokenType.Keyword, value: "false" },
+            { type: TokenType.Whitespace, value: "  " },
+            { type: TokenType.Keyword, value: "true" },
+            { type: TokenType.Whitespace, value: "  " },
+            { type: TokenType.Keyword, value: "null" },
+            { type: TokenType.Whitespace, value: " " },
+        ],
+    );
+
+});
+
 async function toTokenList(chunks: AsyncIterable<string> | Iterable<string>) {
     const tokens = jsonTokenizer(chunks);
     const list = new Array<Token>();

@@ -7,7 +7,7 @@ export enum TokenType {
     ObjectOpen, ObjectClose,
     ArrayOpen, ArrayClose,
     StringOpen, StringClose, StringChunk,
-    NumberValue, KeywordValue,
+    Number, Keyword,
     Comma, Colon,
 }
 
@@ -23,6 +23,7 @@ export const defaultJsonTokenizerOptions = {
     bufferSize: 1024,
 };
 
+// eslint-disable-next-line complexity
 export async function* jsonTokenizer(
     chunks: AsyncIterable<string> | Iterable<string>,
     options: JsonTokenizerOptions = {},
@@ -38,12 +39,18 @@ export async function* jsonTokenizer(
     const char = chars[Symbol.asyncIterator]();
 
     let current = await char.next();
-    while (!current.done) {
-        switch (current.value) {
-            case " ":
-                yield* emitWhitespace();
-                break;
+    yield* emitRoot();
 
+    async function* emitRoot(): AsyncIterable<Token> {
+        while (!current.done) {
+            yield* emitValue();
+        }
+    }
+
+    async function* emitValue(): AsyncIterable<Token> {
+        assert(!current.done);
+
+        switch (current.value) {
             case "{":
                 yield* emitObject();
                 break;
@@ -56,7 +63,16 @@ export async function* jsonTokenizer(
                 yield* emitString();
                 break;
 
-            default: assert.fail();
+            default:
+                if (isLowerAlpha(current.value)) {
+                    yield* emitKeyword();
+                    break;
+                }
+                if (isWhitespace(current.value)) {
+                    yield* emitWhitespace();
+                    break;
+                }
+                assert.fail();
         }
     }
 
@@ -74,9 +90,12 @@ export async function* jsonTokenizer(
 
         while (current.value !== "}") {
             switch (current.value) {
-                case " ":
-                    yield* emitWhitespace();
-                    break;
+                default:
+                    if (isWhitespace(current.value)) {
+                        yield* emitWhitespace();
+                        break;
+                    }
+                    assert.fail();
             }
         }
 
@@ -100,8 +119,9 @@ export async function* jsonTokenizer(
         current = await char.next();
         assert(!current.done);
 
+        let expectComma = false;
         while (current.value !== "]") {
-            switch (current.value) {
+            if (expectComma) switch (current.value) {
                 case ",":
                     yield {
                         type: TokenType.Comma,
@@ -111,22 +131,16 @@ export async function* jsonTokenizer(
                     assert(!current.done);
                     break;
 
-                case " ":
-                    yield* emitWhitespace();
-                    break;
-
-                case "{":
-                    yield* emitObject();
-                    break;
-
-                case "[":
-                    yield* emitArray();
-                    break;
-
-                case "\"":
-                    yield* emitString();
-                    break;
+                default:
+                    if (isWhitespace(current.value)) {
+                        yield* emitWhitespace();
+                        break;
+                    }
+                    assert.fail();
             }
+            else yield* emitValue();
+
+            expectComma = !expectComma;
         }
 
         yield {
@@ -135,23 +149,6 @@ export async function* jsonTokenizer(
         };
 
         current = await char.next();
-    }
-
-    async function* emitWhitespace(): AsyncIterable<Token> {
-        assert(!current.done);
-        assert(current.value === " ");
-
-        let buffer = current.value;
-        current = await char.next();
-        while (!current.done && current.value === " ") {
-            buffer += current.value;
-            current = await char.next();
-        }
-
-        yield {
-            type: TokenType.Whitespace,
-            value: buffer,
-        };
     }
 
     async function* emitString(): AsyncIterable<Token> {
@@ -207,6 +204,41 @@ export async function* jsonTokenizer(
 
         current = await char.next();
     }
+
+    async function* emitKeyword(): AsyncIterable<Token> {
+        assert(!current.done);
+        assert(isLowerAlpha(current.value));
+
+        let buffer = current.value;
+        current = await char.next();
+        while (!current.done && isLowerAlpha(current.value)) {
+            buffer += current.value;
+            current = await char.next();
+        }
+
+        yield {
+            type: TokenType.Keyword,
+            value: buffer,
+        };
+    }
+
+    async function* emitWhitespace(): AsyncIterable<Token> {
+        assert(!current.done);
+        assert(isWhitespace(current.value));
+
+        let buffer = current.value;
+        current = await char.next();
+        while (!current.done && isWhitespace(current.value)) {
+            buffer += current.value;
+            current = await char.next();
+        }
+
+        yield {
+            type: TokenType.Whitespace,
+            value: buffer,
+        };
+    }
+
 }
 
 //#region helpers
@@ -215,6 +247,14 @@ async function* readChars(chunks: AsyncIterable<string> | Iterable<string>) {
     for await (const chunk of chunks) {
         yield* chunk;
     }
+}
+
+function isLowerAlpha(char: string) {
+    return char >= "a" && char <= "z";
+}
+
+function isWhitespace(char: string) {
+    return char === " ";
 }
 
 //#endregion
