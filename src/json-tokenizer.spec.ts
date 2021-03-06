@@ -106,6 +106,17 @@ test("object with members", async t => {
     );
 });
 
+test("number", async t => {
+    t.deepEqual(
+        await toTokenList('10 2'),
+        [
+            { type: TokenType.Number, value: "10" },
+            { type: TokenType.Whitespace, value: " " },
+            { type: TokenType.Number, value: "2" },
+        ],
+    );
+});
+
 async function toTokenList(chunks: AsyncIterable<string> | Iterable<string>) {
     const tokens = jsonTokenizer(chunks);
     const list = new Array<Token>();

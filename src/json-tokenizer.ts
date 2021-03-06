@@ -65,7 +65,15 @@ export async function* jsonTokenizer(
                 yield* emitString();
                 break;
 
+            case "-":
+                yield* emitNumber();
+                break;
+
             default:
+                if (isNumeric(current.value)) {
+                    yield* emitNumber();
+                    break;
+                }
                 if (isLowerAlpha(current.value)) {
                     yield* emitKeyword();
                     break;
@@ -195,6 +203,24 @@ export async function* jsonTokenizer(
         current = await char.next();
     }
 
+    async function* emitNumber(): AsyncIterable<Token> {
+        assert(!current.done);
+        assert(current.value === "-" || isNumeric(current.value));
+
+        let buffer = current.value;
+        current = await char.next();
+        while (!current.done && isNumeric(current.value)) {
+            buffer += current.value;
+            current = await char.next();
+        }
+
+        yield {
+            type: TokenType.Number,
+            value: buffer,
+        };
+
+    }
+
     async function* emitKeyword(): AsyncIterable<Token> {
         assert(!current.done);
         assert(isLowerAlpha(current.value));
@@ -285,6 +311,10 @@ function isLowerAlpha(char: string) {
 
 function isWhitespace(char: string) {
     return char === " ";
+}
+
+function isNumeric(char: string) {
+    return char >= "0" && char <= "9";
 }
 
 //#endregion
