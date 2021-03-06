@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export PROJECT=Gameye/tsprimer
+export PROJECT=Gameye/json-tokenizer
 export BRANCH=$(git branch --show-current)
 
 set +e # continue on error

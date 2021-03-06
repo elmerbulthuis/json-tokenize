@@ -1,5 +1,5 @@
 {
-  "name": "@gameye/tsprimer",
+  "name": "@gameye/json-tokenizer",
   "description": "",
   "main": "node/main.js",
   "module": "module/main.js",
@@ -32,12 +32,6 @@
     "typescript": "^4.0.2"
   },
   "dependencies": {
-    "commander": "^7.0.0",
-    "msecs": "^1.0.0",
-    "tslib": "^2.0.1",
-    "type-fest": "^0.20.2"
-  },
-  "engines": {
-    "node": "^12"
+    "tslib": "^2.0.1"
   }
 }

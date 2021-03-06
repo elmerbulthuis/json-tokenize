@@ -1,37 +1,56 @@
 version: 2
 
 jobs:
-  test:
-    machine:
-      image: ubuntu-1604:201903-01
-      docker_layer_caching: false
+  prepare:
+    docker:
+      - image: circleci/node:15
     steps:
       - checkout
-      - run: >
-          docker login
-          --username $DOCKER_USERNAME
-          --password $DOCKER_PASSWORD
-      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> .npmrc
-      - run:
-          environment:
-            NVM_DIR: /opt/circleci/.nvm
-          command: |
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install 12
-            nvm alias default 12
-            npm install
-            npm run lint
-            npm run coverage
-      - store_artifacts:
-          path: coverage/lcov-report
+      - run: npm install
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .npmrc
+            - node_modules
+            - node
+            - module
+            - types
+
+  test:
+    docker:
+      - image: circleci/node:15
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: npm run lint
+      - run: npm run test
+
+  publish:
+    docker:
+      - image: circleci/node:15
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+      - run: npm version ${CIRCLE_TAG}
+      - run: npm publish
 
 workflows:
   version: 2
-
-  test:
+  main:
     jobs:
-      - test:
-          context: authorized
+      - prepare:
           filters:
-            tags:
-              only: /.*?/
+            tags: { only: /^v\d+\.\d+\.\d+$/ }
+      - test:
+          requires: [prepare]
+          filters:
+            tags: { only: /^v\d+\.\d+\.\d+$/ }
+      - publish:
+          context: authorized
+          requires: [prepare]
+          filters:
+            branches: { ignore: /.*/ }
+            tags: { only: /^v\d+\.\d+\.\d+$/ }

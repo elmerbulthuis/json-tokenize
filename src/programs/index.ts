@@ -1,2 +1,0 @@
-import "./say";
-import "./version";
