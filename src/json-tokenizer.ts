@@ -42,12 +42,14 @@ export async function* jsonTokenizer(
     yield* emitRoot();
 
     async function* emitRoot(): AsyncIterable<Token> {
+        yield* emitWhitespace();
         while (!current.done) {
-            yield* emitValueOrWhitespace();
+            yield* emitValue();
+            yield* emitWhitespace();
         }
     }
 
-    async function* emitValueOrWhitespace(): AsyncIterable<Token> {
+    async function* emitValue(): AsyncIterable<Token> {
         assert(!current.done);
 
         switch (current.value) {
@@ -68,10 +70,6 @@ export async function* jsonTokenizer(
                     yield* emitKeyword();
                     break;
                 }
-                if (isWhitespace(current.value)) {
-                    yield* emitWhitespace();
-                    break;
-                }
                 assert.fail();
         }
     }
@@ -88,47 +86,20 @@ export async function* jsonTokenizer(
         assert(!current.done);
 
         let expectComma = false;
+        yield* emitWhitespace();
         while (current.value !== "}") {
-            if (expectComma) switch (current.value) {
-                case ",":
-                    yield* emitComma();
-                    break;
-
-                default:
-                    if (isWhitespace(current.value)) {
-                        yield* emitWhitespace();
-                        break;
-                    }
-                    assert.fail();
+            if (expectComma) {
+                yield* emitComma();
+                yield* emitWhitespace();
             }
-            else switch (current.value) {
-                case "\"":
-                    yield* emitString();
-
-                    switch (current.value as string) {
-                        case ":":
-                            yield* emitColon();
-                            break;
-
-                        default:
-                            if (isWhitespace(current.value)) {
-                                yield* emitWhitespace();
-                                break;
-                            }
-                            assert.fail();
-                    }
-
-                    yield* emitValueOrWhitespace();
-                    break;
-
-                default:
-                    if (isWhitespace(current.value)) {
-                        yield* emitWhitespace();
-                        break;
-                    }
-                    assert.fail();
+            else {
+                yield* emitString();
+                yield* emitWhitespace();
+                yield* emitColon();
+                yield* emitWhitespace();
+                yield* emitValue();
+                yield* emitWhitespace();
             }
-
             expectComma = !expectComma;
         }
 
@@ -151,21 +122,16 @@ export async function* jsonTokenizer(
         assert(!current.done);
 
         let expectComma = false;
+        yield* emitWhitespace();
         while (current.value !== "]") {
-            if (expectComma) switch (current.value) {
-                case ",":
-                    yield* emitComma();
-                    break;
-
-                default:
-                    if (isWhitespace(current.value)) {
-                        yield* emitWhitespace();
-                        break;
-                    }
-                    assert.fail();
+            if (expectComma) {
+                yield* emitComma();
+                yield* emitWhitespace();
             }
-            else yield* emitValueOrWhitespace();
-
+            else {
+                yield* emitValue();
+                yield* emitWhitespace();
+            }
             expectComma = !expectComma;
         }
 
@@ -267,17 +233,13 @@ export async function* jsonTokenizer(
     }
 
     async function* emitWhitespace(): AsyncIterable<Token> {
-        assert(!current.done);
-        assert(isWhitespace(current.value));
-
-        let buffer = current.value;
-        current = await char.next();
+        let buffer = "";
         while (!current.done && isWhitespace(current.value)) {
             buffer += current.value;
             current = await char.next();
         }
 
-        yield {
+        if (buffer.length > 0) yield {
             type: TokenType.Whitespace,
             value: buffer,
         };
