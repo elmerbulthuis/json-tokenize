@@ -65,11 +65,15 @@ test("whitespace", async t => {
 
 test("string", async t => {
     t.deepEqual(
-        await toTokenList(' "a\\"bc" '),
+        await toTokenList(' "a\\"bc" "\\u1234\\uffff" '),
         [
             { type: TokenType.Whitespace, value: " " },
             { type: TokenType.StringOpen, value: "\"" },
             { type: TokenType.StringChunk, value: "a\"bc" },
+            { type: TokenType.StringClose, value: "\"" },
+            { type: TokenType.Whitespace, value: " " },
+            { type: TokenType.StringOpen, value: "\"" },
+            { type: TokenType.StringChunk, value: "\u1234\uffff" },
             { type: TokenType.StringClose, value: "\"" },
             { type: TokenType.Whitespace, value: " " },
         ],

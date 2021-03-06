@@ -183,7 +183,6 @@ export async function* jsonTokenizer(
                         buffer += "\t";
                         break;
 
-                    // TODO: test me!
                     case "u": {
                         let codepointHex = "";
 
