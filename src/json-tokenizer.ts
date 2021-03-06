@@ -334,6 +334,7 @@ function isNumeric(char: string) {
 function assertEnd(
     result: IteratorResult<string, void>,
 ): asserts result is IteratorYieldResult<string> {
+    // TODO: make JsonTokenizerError
     if (result.done) throw new SyntaxError("Unexpected end of JSON input");
 }
 
