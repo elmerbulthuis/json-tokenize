@@ -1,20 +1,7 @@
 import { assertDone, assertExpected, isLowerAlpha, isNumeric, isWhitespace, readChars, throwUnexpected } from "./helpers";
+import { Token, TokenType } from "./token";
 
 // see https://www.json.org/json-en.html
-
-export enum TokenType {
-    Whitespace,
-    ObjectOpen, ObjectClose,
-    ArrayOpen, ArrayClose,
-    StringOpen, StringClose, StringChunk,
-    Number, True, False, Null,
-    Comma, Colon,
-}
-
-export interface Token {
-    type: TokenType,
-    value: string,
-}
 
 export interface JsonTokenizerOptions {
     bufferSize?: number;

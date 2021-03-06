@@ -1,5 +1,6 @@
 import * as test from "tape-promise/tape";
-import { jsonTokenizer, Token, TokenType } from "./json-tokenizer";
+import { Token, TokenType } from "./token";
+import { jsonTokenizer } from "./tokenizer";
 
 test("object", async t => {
     t.deepEqual(
