@@ -23,7 +23,6 @@ export const defaultJsonTokenizerOptions = {
     bufferSize: 1024,
 };
 
-// eslint-disable-next-line complexity
 export async function* jsonTokenizer(
     chunks: AsyncIterable<string> | Iterable<string>,
     options: JsonTokenizerOptions = {},
