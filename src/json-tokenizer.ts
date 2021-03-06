@@ -7,7 +7,7 @@ export enum TokenType {
     ObjectOpen, ObjectClose,
     ArrayOpen, ArrayClose,
     StringOpen, StringClose, StringChunk,
-    Number, Keyword,
+    Number, True, False, Null,
     Comma, Colon,
 }
 
@@ -43,11 +43,11 @@ export async function* jsonTokenizer(
 
     async function* emitRoot(): AsyncIterable<Token> {
         while (!current.done) {
-            yield* emitValue();
+            yield* emitValueOrWhitespace();
         }
     }
 
-    async function* emitValue(): AsyncIterable<Token> {
+    async function* emitValueOrWhitespace(): AsyncIterable<Token> {
         assert(!current.done);
 
         switch (current.value) {
@@ -84,12 +84,16 @@ export async function* jsonTokenizer(
             type: TokenType.ObjectOpen,
             value: current.value,
         };
-
         current = await char.next();
         assert(!current.done);
 
+        let expectComma = false;
         while (current.value !== "}") {
-            switch (current.value) {
+            if (expectComma) switch (current.value) {
+                case ",":
+                    yield* emitComma();
+                    break;
+
                 default:
                     if (isWhitespace(current.value)) {
                         yield* emitWhitespace();
@@ -97,13 +101,41 @@ export async function* jsonTokenizer(
                     }
                     assert.fail();
             }
+            else switch (current.value) {
+                case "\"":
+                    yield* emitString();
+
+                    switch (current.value as string) {
+                        case ":":
+                            yield* emitColon();
+                            break;
+
+                        default:
+                            if (isWhitespace(current.value)) {
+                                yield* emitWhitespace();
+                                break;
+                            }
+                            assert.fail();
+                    }
+
+                    yield* emitValueOrWhitespace();
+                    break;
+
+                default:
+                    if (isWhitespace(current.value)) {
+                        yield* emitWhitespace();
+                        break;
+                    }
+                    assert.fail();
+            }
+
+            expectComma = !expectComma;
         }
 
         yield {
             type: TokenType.ObjectClose,
             value: current.value,
         };
-
         current = await char.next();
     }
 
@@ -115,7 +147,6 @@ export async function* jsonTokenizer(
             type: TokenType.ArrayOpen,
             value: current.value,
         };
-
         current = await char.next();
         assert(!current.done);
 
@@ -123,12 +154,7 @@ export async function* jsonTokenizer(
         while (current.value !== "]") {
             if (expectComma) switch (current.value) {
                 case ",":
-                    yield {
-                        type: TokenType.Comma,
-                        value: current.value,
-                    };
-                    current = await char.next();
-                    assert(!current.done);
+                    yield* emitComma();
                     break;
 
                 default:
@@ -138,7 +164,7 @@ export async function* jsonTokenizer(
                     }
                     assert.fail();
             }
-            else yield* emitValue();
+            else yield* emitValueOrWhitespace();
 
             expectComma = !expectComma;
         }
@@ -147,7 +173,6 @@ export async function* jsonTokenizer(
             type: TokenType.ArrayClose,
             value: current.value,
         };
-
         current = await char.next();
     }
 
@@ -159,9 +184,9 @@ export async function* jsonTokenizer(
             type: TokenType.StringOpen,
             value: current.value,
         };
-
         current = await char.next();
         assert(!current.done);
+
         let buffer = "";
         while (current.value !== "\"") {
             if (current.value === "\\") {
@@ -185,7 +210,6 @@ export async function* jsonTokenizer(
                 };
                 buffer = "";
             }
-
             current = await char.next();
             assert(!current.done);
         }
@@ -216,10 +240,30 @@ export async function* jsonTokenizer(
             current = await char.next();
         }
 
-        yield {
-            type: TokenType.Keyword,
-            value: buffer,
-        };
+        switch (buffer) {
+            case "true":
+                yield {
+                    type: TokenType.True,
+                    value: buffer,
+                };
+                break;
+
+            case "false":
+                yield {
+                    type: TokenType.False,
+                    value: buffer,
+                };
+                break;
+
+            case "null":
+                yield {
+                    type: TokenType.Null,
+                    value: buffer,
+                };
+                break;
+
+            default: assert.fail();
+        }
     }
 
     async function* emitWhitespace(): AsyncIterable<Token> {
@@ -237,6 +281,30 @@ export async function* jsonTokenizer(
             type: TokenType.Whitespace,
             value: buffer,
         };
+    }
+
+    async function* emitComma(): AsyncIterable<Token> {
+        assert(!current.done);
+        assert(current.value === ",");
+
+        yield {
+            type: TokenType.Comma,
+            value: current.value,
+        };
+        current = await char.next();
+        assert(!current.done);
+    }
+
+    async function* emitColon(): AsyncIterable<Token> {
+        assert(!current.done);
+        assert(current.value === ":");
+
+        yield {
+            type: TokenType.Colon,
+            value: current.value,
+        };
+        current = await char.next();
+        assert(!current.done);
     }
 
 }

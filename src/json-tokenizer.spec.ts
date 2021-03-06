@@ -81,15 +81,29 @@ test("keyword", async t => {
         await toTokenList(' false  true  null '),
         [
             { type: TokenType.Whitespace, value: " " },
-            { type: TokenType.Keyword, value: "false" },
+            { type: TokenType.False, value: "false" },
             { type: TokenType.Whitespace, value: "  " },
-            { type: TokenType.Keyword, value: "true" },
+            { type: TokenType.True, value: "true" },
             { type: TokenType.Whitespace, value: "  " },
-            { type: TokenType.Keyword, value: "null" },
+            { type: TokenType.Null, value: "null" },
             { type: TokenType.Whitespace, value: " " },
         ],
     );
+});
 
+test("object with members", async t => {
+    t.deepEqual(
+        await toTokenList('{"a":true}'),
+        [
+            { type: TokenType.ObjectOpen, value: "{" },
+            { type: TokenType.StringOpen, value: "\"" },
+            { type: TokenType.StringChunk, value: "a" },
+            { type: TokenType.StringClose, value: "\"" },
+            { type: TokenType.Colon, value: ":" },
+            { type: TokenType.True, value: "true" },
+            { type: TokenType.ObjectClose, value: "}" },
+        ],
+    );
 });
 
 async function toTokenList(chunks: AsyncIterable<string> | Iterable<string>) {
