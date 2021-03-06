@@ -1,0 +1,37 @@
+version: 2
+
+jobs:
+  test:
+    machine:
+      image: ubuntu-1604:201903-01
+      docker_layer_caching: false
+    steps:
+      - checkout
+      - run: >
+          docker login
+          --username $DOCKER_USERNAME
+          --password $DOCKER_PASSWORD
+      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> .npmrc
+      - run:
+          environment:
+            NVM_DIR: /opt/circleci/.nvm
+          command: |
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install 12
+            nvm alias default 12
+            npm install
+            npm run lint
+            npm run coverage
+      - store_artifacts:
+          path: coverage/lcov-report
+
+workflows:
+  version: 2
+
+  test:
+    jobs:
+      - test:
+          context: authorized
+          filters:
+            tags:
+              only: /.*?/
