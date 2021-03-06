@@ -1,4 +1,4 @@
-import { assertDone, assertExpected, isLowerAlpha, isNumeric, isWhitespace, readChars, throwUnexpected } from "./helpers";
+import { JsonTokenizerError } from "./error";
 import { Token, TokenType } from "./token";
 
 // see https://www.json.org/json-en.html
@@ -287,4 +287,53 @@ export async function* jsonTokenizer(
         current = await char.next();
     }
 
+}
+
+export async function* readChars(chunks: AsyncIterable<string> | Iterable<string>) {
+    for await (const chunk of chunks) {
+        yield* chunk;
+    }
+}
+
+export function isLowerAlpha(char: string) {
+    return char >= "a" && char <= "z";
+}
+
+export function isWhitespace(char: string) {
+    return (
+        char === "\u0020" || // space
+        char === "\u000A" || // line feed
+        char === "\u000D" || // carriage return
+        char === "\u0009" // horizontal tab
+    );
+}
+
+function isNumeric(char: string) {
+    return char >= "0" && char <= "9";
+}
+
+function assertDone(
+    result: IteratorResult<string, void>,
+): asserts result is IteratorYieldResult<string> {
+    assert(result.done ?? false, "Unexpected end of input");
+}
+
+function assertExpected(
+    actual: string,
+    expected: string,
+) {
+    if (actual !== expected) {
+        throwUnexpected(actual);
+    }
+}
+
+function throwUnexpected(value: string): never {
+    throw new JsonTokenizerError(`Unexpected ${value}`);
+}
+
+function assert(
+    condition: boolean,
+    message: string,
+): asserts condition {
+    if (condition) throw new JsonTokenizerError(message);
 }
