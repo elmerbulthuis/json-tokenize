@@ -211,7 +211,7 @@ export async function* jsonTokenizer(
                             buffer += String.fromCodePoint(parseInt(codepointHex, 16));
                         }
                         catch {
-                            throw new JsonTokenizerError(`invalid codepoint ${codepointHex}`);
+                            throw new JsonTokenizerError(`Invalid codepoint ${codepointHex}`);
                         }
                         break;
                     }
