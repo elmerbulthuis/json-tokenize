@@ -49,6 +49,7 @@ export async function* jsonTokenizer(
     }
 
     async function* emitValue(): AsyncIterable<Token> {
+        // TODO: syntaxerror
         assert(!current.done);
 
         switch (current.value) {
@@ -64,11 +65,13 @@ export async function* jsonTokenizer(
                 yield* emitString();
                 break;
 
+            // TODO: proper number support
             case "-":
                 yield* emitNumber();
                 break;
 
             default:
+                // TODO: proper number support
                 if (isNumeric(current.value)) {
                     yield* emitNumber();
                     break;
@@ -77,12 +80,15 @@ export async function* jsonTokenizer(
                     yield* emitKeyword();
                     break;
                 }
+                // TODO: syntaxerror
                 assert.fail();
         }
     }
 
     async function* emitObject(): AsyncIterable<Token> {
+        // TODO: syntaxerror
         assert(!current.done);
+        // TODO: syntaxerror
         assert(current.value === "{");
 
         yield {
@@ -90,6 +96,7 @@ export async function* jsonTokenizer(
             value: current.value,
         };
         current = await char.next();
+        // TODO: syntaxerror
         assert(!current.done);
 
         let expectComma = false;
@@ -118,7 +125,9 @@ export async function* jsonTokenizer(
     }
 
     async function* emitArray(): AsyncIterable<Token> {
+        // TODO: syntaxerror
         assert(!current.done);
+        // TODO: syntaxerror
         assert(current.value === "[");
 
         yield {
@@ -126,6 +135,7 @@ export async function* jsonTokenizer(
             value: current.value,
         };
         current = await char.next();
+        // TODO: syntaxerror
         assert(!current.done);
 
         let expectComma = false;
@@ -150,7 +160,9 @@ export async function* jsonTokenizer(
     }
 
     async function* emitString(): AsyncIterable<Token> {
+        // TODO: syntaxerror
         assert(!current.done);
+        // TODO: syntaxerror
         assert(current.value === "\"");
 
         yield {
@@ -158,12 +170,14 @@ export async function* jsonTokenizer(
             value: current.value,
         };
         current = await char.next();
+        // TODO: syntaxerror
         assert(!current.done);
 
         let buffer = "";
         while (current.value !== "\"") {
             if (current.value === "\\") {
                 current = await char.next();
+                // TODO: syntaxerror
                 assert(!current.done);
 
                 switch (current.value) {
@@ -184,6 +198,7 @@ export async function* jsonTokenizer(
                 buffer = "";
             }
             current = await char.next();
+            // TODO: syntaxerror
             assert(!current.done);
         }
 
@@ -202,8 +217,11 @@ export async function* jsonTokenizer(
         current = await char.next();
     }
 
+    // TODO: support fractions, exponents
     async function* emitNumber(): AsyncIterable<Token> {
+        // TODO: syntaxerror
         assert(!current.done);
+        // TODO: syntaxerror
         assert(current.value === "-" || isNumeric(current.value));
 
         let buffer = current.value;
@@ -221,7 +239,9 @@ export async function* jsonTokenizer(
     }
 
     async function* emitKeyword(): AsyncIterable<Token> {
+        // TODO: syntaxerror
         assert(!current.done);
+        // TODO: syntaxerror
         assert(isLowerAlpha(current.value));
 
         let buffer = current.value;
@@ -253,6 +273,7 @@ export async function* jsonTokenizer(
                 };
                 break;
 
+            // TODO: syntaxerror
             default: assert.fail();
         }
     }
@@ -271,7 +292,9 @@ export async function* jsonTokenizer(
     }
 
     async function* emitComma(): AsyncIterable<Token> {
+        // TODO: syntaxerror
         assert(!current.done);
+        // TODO: syntaxerror
         assert(current.value === ",");
 
         yield {
@@ -279,11 +302,14 @@ export async function* jsonTokenizer(
             value: current.value,
         };
         current = await char.next();
+        // TODO: syntaxerror
         assert(!current.done);
     }
 
     async function* emitColon(): AsyncIterable<Token> {
+        // TODO: syntaxerror
         assert(!current.done);
+        // TODO: syntaxerror
         assert(current.value === ":");
 
         yield {
@@ -291,6 +317,7 @@ export async function* jsonTokenizer(
             value: current.value,
         };
         current = await char.next();
+        // TODO: syntaxerror
         assert(!current.done);
     }
 
@@ -309,6 +336,7 @@ function isLowerAlpha(char: string) {
 }
 
 function isWhitespace(char: string) {
+    // TODO: support all whitespace
     return char === " ";
 }
 
