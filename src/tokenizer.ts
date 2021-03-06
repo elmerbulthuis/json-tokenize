@@ -183,8 +183,36 @@ export async function* jsonTokenizer(
                         buffer += "\t";
                         break;
 
+                    // TODO: test me!
                     case "u": {
-                        //TODO implement
+                        let codepointHex = "";
+
+                        current = await char.next();
+                        assertDone(current);
+
+                        codepointHex += current.value;
+
+                        current = await char.next();
+                        assertDone(current);
+
+                        codepointHex += current.value;
+
+                        current = await char.next();
+                        assertDone(current);
+
+                        codepointHex += current.value;
+
+                        current = await char.next();
+                        assertDone(current);
+
+                        codepointHex += current.value;
+
+                        try {
+                            buffer += String.fromCodePoint(parseInt(codepointHex, 16));
+                        }
+                        catch {
+                            throw new JsonTokenizerError(`invalid codepoint ${codepointHex}`);
+                        }
                         break;
                     }
 
