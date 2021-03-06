@@ -336,8 +336,12 @@ function isLowerAlpha(char: string) {
 }
 
 function isWhitespace(char: string) {
-    // TODO: support all whitespace
-    return char === " ";
+    return (
+        char === "\u0020" || // space
+        char === "\u000A" || // line feed
+        char === "\u000D" || // carriage return
+        char === "\u0009" // horizontal tab
+    );
 }
 
 function isNumeric(char: string) {
