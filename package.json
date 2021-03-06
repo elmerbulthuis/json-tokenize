@@ -1,6 +1,7 @@
 {
   "name": "@gameye/json-tokenizer",
-  "description": "",
+  "description": "Streaming, environment agnostic JSON tokenizer.",
+  "sideEffects": false,
   "main": "node/main.js",
   "module": "module/main.js",
   "types": "types/main.d.ts",
@@ -19,7 +20,7 @@
     "spec-all": "npm run spec \"src/**/*.spec.ts\"",
     "coverage": "nyc --reporter text-summary --reporter lcov --reporter json npm test"
   },
-  "author": "",
+  "author": "Elmer Bulthuis",
   "license": "ISC",
   "devDependencies": {
     "@types/tape": "^4.13.0",

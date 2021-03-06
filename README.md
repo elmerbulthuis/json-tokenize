@@ -1,2 +1,2 @@
 # JSON tokenizer
-Streaming JSON tokenizer for efficient JSON parsing.
+Streaming, environment agnostic JSON tokenizer.
