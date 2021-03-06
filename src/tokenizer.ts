@@ -158,8 +158,38 @@ export async function* jsonTokenizer(
 
                 switch (current.value) {
                     case "\"":
-                        buffer += "\"";
+                    case "\\":
+                    case "/":
+                        buffer += current.value;
                         break;
+
+                    case "b":
+                        buffer += "\b";
+                        break;
+
+                    case "f":
+                        buffer += "\f";
+                        break;
+
+                    case "n":
+                        buffer += "\n";
+                        break;
+
+                    case "r":
+                        buffer += "\r";
+                        break;
+
+                    case "t":
+                        buffer += "\t";
+                        break;
+
+                    case "u": {
+                        //TODO implement
+                        break;
+                    }
+
+                    default:
+                        throw new JsonTokenizerError(`Invalid escape character ${current.value}`);
                 }
             }
             else {
