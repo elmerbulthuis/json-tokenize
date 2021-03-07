@@ -80,7 +80,7 @@ test("whitespace", async t => {
 
 test("string", async t => {
     t.deepEqual(
-        await toTokenList(' "a\\"bc" "\\u1234\\uffff" '),
+        await toTokenList(" \"a\\\"bc\" \"\\u1234\\uffff\" "),
         [
             { type: TokenType.Whitespace, value: " " },
             { type: TokenType.StringOpen, value: "\"" },
@@ -98,7 +98,7 @@ test("string", async t => {
 
 test("keyword", async t => {
     t.deepEqual(
-        await toTokenList(' false  true  null '),
+        await toTokenList(" false  true  null "),
         [
             { type: TokenType.Whitespace, value: " " },
             { type: TokenType.False, value: "false" },
@@ -113,7 +113,7 @@ test("keyword", async t => {
 
 test("object with members", async t => {
     t.deepEqual(
-        await toTokenList('{"a":true}'),
+        await toTokenList("{\"a\":true}"),
         [
             { type: TokenType.ObjectOpen, value: "{" },
             { type: TokenType.StringOpen, value: "\"" },
