@@ -1,6 +1,11 @@
 {
   "name": "tokenize-json",
   "description": "Streaming, environment agnostic JSON tokenizer.",
+  "keywords": [
+    "json",
+    "tokenizer",
+    "lexer"
+  ],
   "sideEffects": false,
   "main": "node/main.js",
   "module": "module/main.js",
