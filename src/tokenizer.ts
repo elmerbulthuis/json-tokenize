@@ -310,7 +310,6 @@ export async function* jsonTokenizer(
             current = await char.next();
             assertDone(current);
 
-            // minus
             if (current.value === "-" || current.value === "+") {
                 buffer += current.value;
                 current = await char.next();
