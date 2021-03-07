@@ -24,7 +24,10 @@ jobs:
       - attach_workspace:
           at: .
       - run: npm run lint
-      - run: npm run test
+      - run: npm run coverage
+      - store_artifacts:
+          path: /coverage
+          destination: coverage
 
   publish:
     docker:
