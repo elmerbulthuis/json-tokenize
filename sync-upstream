@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export PROJECT=Gameye/json-tokenizer
+export PROJECT=Gameye/json-tokenize
 export BRANCH=$(git branch --show-current)
 
 set +e # continue on error

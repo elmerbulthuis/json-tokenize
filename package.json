@@ -1,5 +1,5 @@
 {
-  "name": "@gameye/json-tokenizer",
+  "name": "@gameye/json-tokenize",
   "description": "Streaming, environment agnostic JSON tokenizer.",
   "sideEffects": false,
   "main": "node/main.js",

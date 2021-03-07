@@ -1,4 +1,4 @@
-# JSON tokenizer
+# JSON tokenize
 Streaming, environment agnostic JSON tokenizer.
 
 Based on https://www.json.org/json-en.html
