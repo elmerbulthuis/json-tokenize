@@ -68,3 +68,22 @@ async function* readResponseBody(stream: ReadableStream<Uint8Array>) {
 }
 
 ```
+
+You could also tokenize an iterable of strings. So that could be an array of strings, but a string itself is also an iterable of strings!
+
+```typescript
+// TODO: test me
+
+async function countObjects(texts: Iterable<string>) {
+    const tokens = tokenize(texts);
+
+    // let's count some objects!
+    let objectCount = 0;
+    for await (const token of tokens) {
+        if (token.type === TokenType.ObjectOpen) {
+            objectCount++;
+        }
+    }
+    return objectCount;
+}
+```
