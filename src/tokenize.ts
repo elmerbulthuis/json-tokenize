@@ -1,18 +1,18 @@
 import { JsonTokenizerError } from "./error";
 import { Token, TokenType } from "./token";
 
-// see https://www.json.org/json-en.html
+// based on https://www.json.org/json-en.html
 
-export interface JsonTokenizerOptions {
+export interface TokenizeOptions {
     bufferSize?: number;
 }
 export const defaultJsonTokenizerOptions = {
     bufferSize: 1024,
 };
 
-export async function* jsonTokenizer(
+export async function* tokenize(
     chunks: AsyncIterable<string> | Iterable<string>,
-    options: JsonTokenizerOptions = {},
+    options: TokenizeOptions = {},
 ): AsyncIterable<Token> {
     const {
         bufferSize,

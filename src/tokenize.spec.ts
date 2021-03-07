@@ -1,6 +1,21 @@
+import * as fs from "fs";
 import * as test from "tape-promise/tape";
 import { Token, TokenType } from "./token";
-import { jsonTokenizer } from "./tokenizer";
+import { tokenize } from "./tokenize";
+
+readPackage();
+
+async function readPackage() {
+    const stream = fs.createReadStream("package.json", "utf8");
+    const tokens = tokenize(stream);
+    let objectCount = 0;
+    for await (const token of tokens) {
+        if (token.type === TokenType.ObjectOpen) {
+            objectCount++;
+        }
+    }
+    console.log(`found ${objectCount} objects`);
+}
 
 test("object", async t => {
     t.deepEqual(
@@ -131,7 +146,7 @@ test("number", async t => {
 });
 
 async function toTokenList(chunks: AsyncIterable<string> | Iterable<string>) {
-    const tokens = jsonTokenizer(chunks);
+    const tokens = tokenize(chunks);
     const list = new Array<Token>();
     for await (const token of tokens) {
         list.push(token);
