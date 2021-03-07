@@ -149,6 +149,7 @@ export async function* tokenize(
         assertDone(current);
 
         let buffer = "";
+
         while (current.value !== "\"") {
             if (current.value === "\\") {
                 current = await char.next();
@@ -343,8 +344,8 @@ export async function* tokenize(
             throwUnexpected(current.value);
         }
 
-        let buffer = current.value;
-        current = await char.next();
+        let buffer = "";
+
         while (!current.done && isLowerAlpha(current.value)) {
             buffer += current.value;
             current = await char.next();
@@ -378,6 +379,7 @@ export async function* tokenize(
 
     async function* emitWhitespace(): AsyncIterable<Token> {
         let buffer = "";
+
         while (!current.done && isWhitespace(current.value)) {
             buffer += current.value;
             current = await char.next();
