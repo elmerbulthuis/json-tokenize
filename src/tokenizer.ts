@@ -51,13 +51,11 @@ export async function* jsonTokenizer(
                 yield* emitString();
                 break;
 
-            // TODO: proper number support
             case "-":
                 yield* emitNumber();
                 break;
 
             default:
-                // TODO: proper number support
                 if (isNumeric(current.value)) {
                     yield* emitNumber();
                     break;
@@ -249,18 +247,88 @@ export async function* jsonTokenizer(
         current = await char.next();
     }
 
-    // TODO: support fractions, exponents
+    // eslint-disable-next-line complexity
     async function* emitNumber(): AsyncIterable<Token> {
         assertDone(current);
         if (!(current.value === "-" || isNumeric(current.value))) {
             throwUnexpected(current.value);
         }
 
-        let buffer = current.value;
-        current = await char.next();
-        while (!current.done && isNumeric(current.value)) {
+        let buffer = "";
+
+        // minus
+        if (current.value === "-") {
             buffer += current.value;
             current = await char.next();
+            assertDone(current);
+        }
+
+        // integer
+        if (current.value === "0") {
+            buffer += current.value;
+
+            current = await char.next();
+        }
+        else if (isNumeric(current.value)) {
+            buffer += current.value;
+            current = await char.next();
+
+            while (!current.done && isNumeric(current.value)) {
+                buffer += current.value;
+                current = await char.next();
+            }
+        }
+        else {
+            throwUnexpected(current.value);
+        }
+
+        // fraction
+        if (!current.done && current.value === ".") {
+            buffer += current.value;
+
+            current = await char.next();
+            assertDone(current);
+
+            if (isNumeric(current.value)) {
+                buffer += current.value;
+                current = await char.next();
+
+                while (!current.done && isNumeric(current.value)) {
+                    buffer += current.value;
+                    current = await char.next();
+                }
+            }
+            else {
+                throwUnexpected(current.value);
+            }
+        }
+
+        // exponent
+        if (!current.done && current.value === "e" || current.value === "E") {
+            buffer += current.value;
+
+            current = await char.next();
+            assertDone(current);
+
+            // minus
+            if (current.value === "-" || current.value === "+") {
+                buffer += current.value;
+                current = await char.next();
+                assertDone(current);
+            }
+
+            if (isNumeric(current.value)) {
+                buffer += current.value;
+                current = await char.next();
+
+                while (!current.done && isNumeric(current.value)) {
+                    buffer += current.value;
+                    current = await char.next();
+                }
+            }
+            else {
+                throwUnexpected(current.value);
+            }
         }
 
         yield {

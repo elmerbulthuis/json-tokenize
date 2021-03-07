@@ -113,11 +113,21 @@ test("object with members", async t => {
 
 test("number", async t => {
     t.deepEqual(
-        await toTokenList('10 -2'),
+        await toTokenList("10 -2 0 -0 0.1 10e2 10E-2"),
         [
             { type: TokenType.Number, value: "10" },
             { type: TokenType.Whitespace, value: " " },
             { type: TokenType.Number, value: "-2" },
+            { type: TokenType.Whitespace, value: " " },
+            { type: TokenType.Number, value: "0" },
+            { type: TokenType.Whitespace, value: " " },
+            { type: TokenType.Number, value: "-0" },
+            { type: TokenType.Whitespace, value: " " },
+            { type: TokenType.Number, value: "0.1" },
+            { type: TokenType.Whitespace, value: " " },
+            { type: TokenType.Number, value: "10e2" },
+            { type: TokenType.Whitespace, value: " " },
+            { type: TokenType.Number, value: "10E-2" },
         ],
     );
 });
