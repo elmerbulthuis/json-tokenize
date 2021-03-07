@@ -26,8 +26,7 @@ jobs:
       - run: npm run lint
       - run: npm run coverage
       - store_artifacts:
-          path: /coverage
-          destination: coverage
+          path: coverage
 
   publish:
     docker:
