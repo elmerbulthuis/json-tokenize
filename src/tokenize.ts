@@ -145,6 +145,7 @@ export async function* tokenize(
             type: TokenType.StringOpen,
             value: current.value,
         };
+
         current = await char.next();
         assertDone(current);
 
@@ -339,11 +340,6 @@ export async function* tokenize(
     }
 
     async function* emitKeyword(): AsyncIterable<Token> {
-        assertDone(current);
-        if (!isLowerAlpha(current.value)) {
-            throwUnexpected(current.value);
-        }
-
         let buffer = "";
 
         while (!current.done && isLowerAlpha(current.value)) {
@@ -399,6 +395,7 @@ export async function* tokenize(
             type: TokenType.Comma,
             value: current.value,
         };
+
         current = await char.next();
     }
 
@@ -410,6 +407,7 @@ export async function* tokenize(
             type: TokenType.Colon,
             value: current.value,
         };
+
         current = await char.next();
     }
 
