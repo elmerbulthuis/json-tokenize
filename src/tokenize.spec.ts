@@ -84,11 +84,11 @@ test("string", async t => {
         [
             { type: TokenType.Whitespace, value: " " },
             { type: TokenType.StringOpen, value: "\"" },
-            { type: TokenType.StringChunk, value: "a\"bc" },
+            { type: TokenType.StringChunk, value: "a\\\"bc" },
             { type: TokenType.StringClose, value: "\"" },
             { type: TokenType.Whitespace, value: " " },
             { type: TokenType.StringOpen, value: "\"" },
-            { type: TokenType.StringChunk, value: "\u1234\uffff" },
+            { type: TokenType.StringChunk, value: "\\u1234\\uffff" },
             { type: TokenType.StringClose, value: "\"" },
             { type: TokenType.Whitespace, value: " " },
         ],

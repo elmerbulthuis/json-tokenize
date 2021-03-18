@@ -150,78 +150,19 @@ export async function* tokenize(
         assertDone(current);
 
         let buffer = "";
-
         while (current.value !== "\"") {
+
             if (current.value === "\\") {
+                buffer += current.value;
+
                 current = await char.next();
                 assertDone(current);
-
-                switch (current.value) {
-                    case "\"":
-                    case "\\":
-                    case "/":
-                        buffer += current.value;
-                        break;
-
-                    case "b":
-                        buffer += "\b";
-                        break;
-
-                    case "f":
-                        buffer += "\f";
-                        break;
-
-                    case "n":
-                        buffer += "\n";
-                        break;
-
-                    case "r":
-                        buffer += "\r";
-                        break;
-
-                    case "t":
-                        buffer += "\t";
-                        break;
-
-                    case "u": {
-                        let codepointHex = "";
-
-                        current = await char.next();
-                        assertDone(current);
-
-                        codepointHex += current.value;
-
-                        current = await char.next();
-                        assertDone(current);
-
-                        codepointHex += current.value;
-
-                        current = await char.next();
-                        assertDone(current);
-
-                        codepointHex += current.value;
-
-                        current = await char.next();
-                        assertDone(current);
-
-                        codepointHex += current.value;
-
-                        try {
-                            buffer += String.fromCodePoint(parseInt(codepointHex, 16));
-                        }
-                        catch {
-                            throw new JsonTokenizerError(`Invalid codepoint ${codepointHex}`);
-                        }
-                        break;
-                    }
-
-                    default:
-                        throw new JsonTokenizerError(`Invalid escape character ${current.value}`);
-                }
             }
-            else {
-                buffer += current.value;
-            }
+
+            buffer += current.value;
+
+            current = await char.next();
+            assertDone(current);
 
             if (buffer.length >= bufferSize) {
                 yield {
@@ -230,8 +171,6 @@ export async function* tokenize(
                 };
                 buffer = "";
             }
-            current = await char.next();
-            assertDone(current);
         }
 
         if (buffer.length > 0) {
