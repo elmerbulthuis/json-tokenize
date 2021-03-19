@@ -155,14 +155,19 @@ export async function* tokenize(
             if (current.value === "\\") {
                 buffer += current.value;
 
+                if (buffer.length >= bufferSize) {
+                    yield {
+                        type: TokenType.StringChunk,
+                        value: buffer,
+                    };
+                    buffer = "";
+                }
+
                 current = await char.next();
                 assertDone(current);
             }
 
             buffer += current.value;
-
-            current = await char.next();
-            assertDone(current);
 
             if (buffer.length >= bufferSize) {
                 yield {
@@ -171,6 +176,9 @@ export async function* tokenize(
                 };
                 buffer = "";
             }
+
+            current = await char.next();
+            assertDone(current);
         }
 
         if (buffer.length > 0) {
