@@ -6,7 +6,7 @@ import { Token, TokenType } from "./token";
 export interface TokenizeOptions {
     bufferSize?: number;
 }
-export const defaultJsonTokenizerOptions = {
+export const defaultTokenizeOptions = {
     bufferSize: 1024,
 };
 
@@ -17,7 +17,7 @@ export async function* tokenize(
     const {
         bufferSize,
     } = {
-        ...defaultJsonTokenizerOptions,
+        ...defaultTokenizeOptions,
         ...options,
     };
 
