@@ -7,12 +7,12 @@ measure(10);
 async function measure(iterations: number) {
     console.log(`${iterations} cycles`);
 
-    console.time();
+    console.time("frankfurt");
 
     const stream = fs.createReadStream(path.join("fixtures", "frankfurt.json"), "utf8");
     for await (const token of tokenize(stream)) {
         //
     }
 
-    console.timeEnd();
+    console.timeEnd("frankfurt");
 }
