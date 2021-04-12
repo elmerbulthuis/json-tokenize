@@ -1,21 +1,6 @@
-import * as fs from "fs";
 import * as test from "tape-promise/tape";
 import { Token, TokenType } from "./token";
 import { tokenize } from "./tokenize";
-
-readPackage();
-
-async function readPackage() {
-    const stream = fs.createReadStream("package.json", "utf8");
-    const tokens = tokenize(stream);
-    let objectCount = 0;
-    for await (const token of tokens) {
-        if (token.type === TokenType.ObjectOpen) {
-            objectCount++;
-        }
-    }
-    console.log(`found ${objectCount} objects`);
-}
 
 test("object", async t => {
     t.deepEqual(
